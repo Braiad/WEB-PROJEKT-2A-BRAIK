@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANIWATCH // SYSTEM ONLINE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- SCANLINE OVERLAY nelibi se mi to takze blehhh <div class="scanlines" aria-hidden="true"></div>-->
+  
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-left">
+      <div class="logo" onclick="showHome()" title="Return to home">
+        <span class="logo-bracket">[</span>
+        ANI<span class="logo-accent">WATCH</span>
+        <span class="logo-bracket">]</span>
+      </div>
+      <div class="nav-status">
+        <span class="status-dot"></span>
+        <span class="status-text" id="statusText">SYSTEM ONLINE</span>
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="SEARCH ANIME..." autocomplete="off" />
+        <button id="searchBtn" onclick="triggerSearch()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== HOME VIEW ===== -->
+  <div id="homeView">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-bg-grid" aria-hidden="true"></div>
+      <div class="hero-content">
+        <div class="hero-eyebrow">// NERV ENTERTAINMENT SYSTEM v2.0</div>
+        <h1 class="hero-title">WATCH.<br/><span class="hero-accent">TRACK.</span><br/>REPEAT.</h1>
+        <p class="hero-sub">Unauthorized access to anime is highly encouraged.<br/>All streams are routed through local proxy.</p>
+        <div class="hero-search">
+          <input type="text" id="heroSearchInput" placeholder="Search for an anime title..." autocomplete="off" />
+          <button onclick="triggerHeroSearch()">SEARCH //</button>
+        </div>
+      </div>
+      <div class="hero-decoration" aria-hidden="true">
+        <div class="hex-grid"></div>
+      </div>
+    </section>
+
+    <!-- CONTINUE WATCHING -->
+    <section class="section" id="continueSection" style="display:none">
+      <div class="section-header">
+        <h2 class="section-title"><span class="title-prefix">01 //</span> CONTINUE WATCHING</h2>
+        <button class="clear-btn" onclick="clearHistory()">CLEAR ALL</button>
+      </div>
+      <div class="continue-grid" id="continueGrid"></div>
+    </section>
+
+    <!-- CURRENTLY AIRING -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="title-prefix">02 //</span> CURRENTLY AIRING</h2>
+        <span class="season-badge" id="seasonBadge">LOADING...</span>
+      </div>
+      <div class="anime-grid" id="airingGrid">
+        <div class="skeleton-grid">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOP RATED -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="title-prefix">03 //</span> TOP RATED</h2>
+      </div>
+      <div class="anime-grid" id="topGrid">
+        <div class="skeleton-grid">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===== SEARCH VIEW ===== -->
+  <div id="searchView" class="hidden">
+    <div class="view-header">
+      <h2 class="view-title">SEARCH RESULTS <span id="searchQueryLabel"></span></h2>
+    </div>
+    <div class="anime-grid" id="searchGrid"></div>
+    <div id="searchEmpty" class="empty-state hidden">
+      <div class="empty-icon">// 404</div>
+      <p>No results found. Try a different query.</p>
+    </div>
+  </div>
+
+  <!-- ===== ANIME DETAIL VIEW ===== -->
+  <div id="detailView" class="hidden">
+    <div class="detail-hero" id="detailHero">
+      <div class="detail-hero-bg" id="detailHeroBg"></div>
+      <div class="detail-hero-content">
+        <img id="detailPoster" src="" alt="" />
+        <div class="detail-info">
+          <div class="detail-meta-row">
+            <span class="meta-badge" id="detailType"></span>
+            <span class="meta-badge meta-year" id="detailYear"></span>
+            <span class="meta-badge meta-status" id="detailStatus"></span>
+          </div>
+          <h1 id="detailTitle"></h1>
+          <p id="detailSynopsis"></p>
+          <div class="detail-stats">
+            <div class="stat"><span class="stat-label">SCORE</span><span class="stat-val" id="detailScore"></span></div>
+            <div class="stat"><span class="stat-label">EPISODES</span><span class="stat-val" id="detailEps"></span></div>
+            <div class="stat"><span class="stat-label">STUDIO</span><span class="stat-val" id="detailStudio"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="episodes-section">
+      <div class="section-header">
+        <h2 class="section-title"><span class="title-prefix">EP //</span> EPISODES</h2>
+        <div class="ep-controls">
+          <input type="text" id="epSearch" placeholder="FILTER..." oninput="filterEpisodes()" />
+        </div>
+      </div>
+      <div id="episodeGrid" class="episode-grid"></div>
+      <div id="epLoading" class="loading-indicator">
+        <span class="loading-text">// FETCHING EPISODE DATA</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PLAYER VIEW ===== -->
+  <div id="playerView" class="hidden">
+    <div class="player-layout">
+      <div class="player-main">
+        <div class="player-wrap">
+          <video id="videoPlayer" controls playsinline></video>
+          <div id="playerOverlay" class="player-overlay hidden">
+            <div class="player-overlay-text" id="playerOverlayText">LOADING STREAM...</div>
+          </div>
+        </div>
+        <div class="player-info-bar">
+          <div class="player-anime-title" id="playerAnimeTitle"></div>
+          <div class="player-ep-title" id="playerEpTitle"></div>
+          <div class="quality-selector" id="qualitySelector"></div>
+        </div>
+      </div>
+      <div class="player-sidebar">
+        <div class="sidebar-header">
+          <span>// EPISODE LIST</span>
+          <button class="back-btn" onclick="backToDetail()">← BACK</button>
+        </div>
+        <div id="sidebarEpisodes" class="sidebar-ep-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
