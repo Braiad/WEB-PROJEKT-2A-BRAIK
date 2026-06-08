@@ -214,8 +214,12 @@ app.get('/auth/mal/login', (req, res) => {
   const verifier  = generateVerifier();
   const challenge = generateChallenge(verifier);
   const state     = base64url(crypto.randomBytes(16));
-  pkceStore[state] = verifier;
-  setTimeout(() => delete pkceStore[state], 10*60*1000);
+  const secure    = PUBLIC_URL.startsWith('https') ? '; Secure' : '';
+  // Store verifier in cookie instead of memory — works across Railway instances
+  res.setHeader('Set-Cookie', [
+    `mal_pkce_verifier=${verifier}; HttpOnly; SameSite=Lax; Max-Age=600; Path=/${secure}`,
+    `mal_pkce_state=${state}; HttpOnly; SameSite=Lax; Max-Age=600; Path=/${secure}`,
+  ]);
   const params = new URLSearchParams({
     response_type:'code', client_id:MAL_CLIENT_ID,
     redirect_uri:MAL_REDIRECT, state,
@@ -226,9 +230,15 @@ app.get('/auth/mal/login', (req, res) => {
 
 app.get('/auth/mal/callback', async (req, res) => {
   const { code, state } = req.query;
-  const verifier = pkceStore[state];
-  if (!verifier) return res.status(400).send('Invalid state. Try logging in again.');
-  delete pkceStore[state];
+  // Read verifier from cookie instead of memory
+  const verifier      = req.cookies.mal_pkce_verifier;
+  const storedState   = req.cookies.mal_pkce_state;
+  if (!verifier || storedState !== state) return res.status(400).send('Invalid state. Try logging in again.');
+  // Clear PKCE cookies
+  res.setHeader('Set-Cookie', [
+    'mal_pkce_verifier=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/',
+    'mal_pkce_state=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/',
+  ]);
   try {
     const body = new URLSearchParams({
       client_id:MAL_CLIENT_ID, grant_type:'authorization_code',
