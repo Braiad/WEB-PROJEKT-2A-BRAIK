@@ -189,9 +189,19 @@ app.get('/api/proxy', async (req, res) => {
   if (!url) return res.status(400).send('Missing url');
   const decoded = decodeURIComponent(url);
   try {
-    const r = await fetchT(decoded, {
-      headers: { 'Referer':'https://anizone.to/', 'Origin':'https://anizone.to', 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-    }, 20000);
+const r = await fetchT(decoded, {
+  headers: {
+    'Referer':          'https://anizone.to/',
+    'Origin':           'https://anizone.to',
+    'User-Agent':       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept':           '*/*',
+    'Accept-Language':  'en-US,en;q=0.9',
+    'Accept-Encoding':  'gzip, deflate, br',
+    'Sec-Fetch-Dest':   'empty',
+    'Sec-Fetch-Mode':   'cors',
+    'Sec-Fetch-Site':   'cross-site',
+  }
+}, 20000);
     if (!r.ok) return res.status(r.status).send(`Upstream ${r.status}`);
     const ct = r.headers.get('content-type') || '';
     res.setHeader('Access-Control-Allow-Origin', '*');
