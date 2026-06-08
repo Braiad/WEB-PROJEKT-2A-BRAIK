@@ -27,8 +27,8 @@ const NERV_API     = process.env.NERV_API     || 'http://127.0.0.1:3000/api';
 const PUBLIC_URL   = process.env.PUBLIC_URL   || 'http://localhost:5000';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
 const PORT         = process.env.PORT         || 5000;
-const MAL_CLIENT_ID     = process.env.MAL_CLIENT_ID     || '2ecebbcdee03d3687f5070e852f751dc';
-const MAL_CLIENT_SECRET = process.env.MAL_CLIENT_SECRET || '';
+const MAL_CLIENT_ID     = process.env.MAL_CLIENT_ID     || 'ce0bb996cd3ec43e0bf32bb0cee4ac1d';
+const MAL_CLIENT_SECRET = process.env.MAL_CLIENT_SECRET || '1f2bad898c0f40dab66bcde40392ead94909d81e25682085550bd06ba85b3acd';
 const MAL_REDIRECT = `${PUBLIC_URL}/auth/mal/callback`;
 const MAL_API      = 'https://api.myanimelist.net/v2';
 const MAL_AUTH     = 'https://myanimelist.net/v1/oauth2';
@@ -189,9 +189,19 @@ app.get('/api/proxy', async (req, res) => {
   if (!url) return res.status(400).send('Missing url');
   const decoded = decodeURIComponent(url);
   try {
-    const r = await fetchT(decoded, {
-      headers: { 'Referer':'https://anizone.to/', 'Origin':'https://anizone.to', 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-    }, 20000);
+const r = await fetchT(decoded, {
+  headers: {
+    'Referer':          'https://anizone.to/',
+    'Origin':           'https://anizone.to',
+    'User-Agent':       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    'Accept':           '*/*',
+    'Accept-Language':  'en-US,en;q=0.9',
+    'Accept-Encoding':  'gzip, deflate, br',
+    'Sec-Fetch-Dest':   'empty',
+    'Sec-Fetch-Mode':   'cors',
+    'Sec-Fetch-Site':   'cross-site',
+  }
+}, 20000);
     if (!r.ok) return res.status(r.status).send(`Upstream ${r.status}`);
     const ct = r.headers.get('content-type') || '';
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -214,8 +224,12 @@ app.get('/auth/mal/login', (req, res) => {
   const verifier  = generateVerifier();
   const challenge = generateChallenge(verifier);
   const state     = base64url(crypto.randomBytes(16));
-  pkceStore[state] = verifier;
-  setTimeout(() => delete pkceStore[state], 10*60*1000);
+  const secure    = PUBLIC_URL.startsWith('https') ? '; Secure' : '';
+  // Store verifier in cookie instead of memory — works across Railway instances
+  res.setHeader('Set-Cookie', [
+    `mal_pkce_verifier=${verifier}; HttpOnly; SameSite=Lax; Max-Age=600; Path=/${secure}`,
+    `mal_pkce_state=${state}; HttpOnly; SameSite=Lax; Max-Age=600; Path=/${secure}`,
+  ]);
   const params = new URLSearchParams({
     response_type:'code', client_id:MAL_CLIENT_ID,
     redirect_uri:MAL_REDIRECT, state,
@@ -226,9 +240,15 @@ app.get('/auth/mal/login', (req, res) => {
 
 app.get('/auth/mal/callback', async (req, res) => {
   const { code, state } = req.query;
-  const verifier = pkceStore[state];
-  if (!verifier) return res.status(400).send('Invalid state. Try logging in again.');
-  delete pkceStore[state];
+  // Read verifier from cookie instead of memory
+  const verifier      = req.cookies.mal_pkce_verifier;
+  const storedState   = req.cookies.mal_pkce_state;
+  if (!verifier || storedState !== state) return res.status(400).send('Invalid state. Try logging in again.');
+  // Clear PKCE cookies
+  res.setHeader('Set-Cookie', [
+    'mal_pkce_verifier=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/',
+    'mal_pkce_state=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/',
+  ]);
   try {
     const body = new URLSearchParams({
       client_id:MAL_CLIENT_ID, grant_type:'authorization_code',

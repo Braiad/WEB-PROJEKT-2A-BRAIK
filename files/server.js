@@ -27,8 +27,8 @@ const NERV_API     = process.env.NERV_API     || 'http://127.0.0.1:3000/api';
 const PUBLIC_URL   = process.env.PUBLIC_URL   || 'http://localhost:5000';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
 const PORT         = process.env.PORT         || 5000;
-const MAL_CLIENT_ID     = process.env.MAL_CLIENT_ID     || 'ce0bb996cd3ec43e0bf32bb0cee4ac1d';
-const MAL_CLIENT_SECRET = process.env.MAL_CLIENT_SECRET || '1f2bad898c0f40dab66bcde40392ead94909d81e25682085550bd06ba85b3acd';
+const MAL_CLIENT_ID     = process.env.MAL_CLIENT_ID     || '2ecebbcdee03d3687f5070e852f751dc';
+const MAL_CLIENT_SECRET = process.env.MAL_CLIENT_SECRET || '';
 const MAL_REDIRECT = `${PUBLIC_URL}/auth/mal/callback`;
 const MAL_API      = 'https://api.myanimelist.net/v2';
 const MAL_AUTH     = 'https://myanimelist.net/v1/oauth2';
@@ -60,7 +60,7 @@ const PROVIDERS = {
     prefix:      'hianime',
     episodeMode: 'separate',
     searchMap:   d => (d.data||[]).map(a => ({ id:a.id, name:a.name||a.title, poster:a.poster||a.posterImage, type:a.type })),
-    recentRoute: 'anime/recent/updated',
+    recentRoute: 'anime/category/airing',
     recentMap:   d => d.data||d||[],
     infoMap:     d => ({ info:d.data||{}, episodes:[] }),
     episodeMap:  ep => ({ id: ep.episodeId||ep.id, number: ep.number||ep.episodeNumber, title: ep.title }),
@@ -71,11 +71,22 @@ const PROVIDERS = {
     prefix:      'kaido',
     episodeMode: 'separate',
     searchMap:   d => (d.data||[]).map(a => ({ id:a.id, name:a.name||a.title, poster:a.poster||a.posterImage, type:a.type })),
-    recentRoute: 'anime/recent/updated',
+    recentRoute: 'anime/category/airing',
     recentMap:   d => d.data||d||[],
     infoMap:     d => ({ info:d.data||{}, episodes:[] }),
     episodeMap:  ep => ({ id: ep.episodeId||ep.id, number: ep.number||ep.episodeNumber, title: ep.title }),
     sourcesRoute:(epId, ver) => `sources/${encodeURIComponent(epId)}?version=${ver}&server=vidcloud`,
+    sourcesMap:  d => ({ sources: d.data?.sources||d.sources||[], subtitles: d.data?.subtitles||d.subtitles||[] }),
+  },
+  animepahe: {
+    prefix:      'animepahe',
+    episodeMode: 'separate',
+    searchMap:   d => (d.data||d.results||[]).map(a => ({ id:a.session||a.id, name:a.title||a.name, poster:a.poster||a.image||a.posterImage, type:a.type||'TV', year:a.year })),
+    recentRoute: 'episodes/recent',
+    recentMap:   d => (d.data||d||[]).map(ep => ({ id:ep.animeSession||ep.session, name:ep.animeTitle||ep.title, poster:ep.snapshot||ep.poster||'', episodeId:ep.session, episodeNumber:ep.episode })),
+    infoMap:     d => ({ info:d.data||d||{}, episodes:[] }),
+    episodeMap:  ep => ({ id: ep.session||ep.episodeId||ep.id, number: ep.episode||ep.episodeNumber||ep.number, title: ep.title||`Episode ${ep.episode||ep.number}` }),
+    sourcesRoute:(epId, ver) => `sources/${encodeURIComponent(epId)}?version=${ver}`,
     sourcesMap:  d => ({ sources: d.data?.sources||d.sources||[], subtitles: d.data?.subtitles||d.subtitles||[] }),
   },
 };
@@ -133,7 +144,9 @@ app.get('/api/anime/:id', async (req, res) => {
     const norm = p.infoMap(d);
     if (p.episodeMode === 'separate') {
       try {
-        const er = await fetchT(`${NERV_API}/${p.prefix}/anime/${encodeURIComponent(id)}/episodes`, {}, 20000);
+        // animepahe uses /anime/:id/episodes, others use the same pattern
+        const epUrl = `${NERV_API}/${p.prefix}/anime/${encodeURIComponent(id)}/episodes`;
+        const er = await fetchT(epUrl, {}, 20000);
         const ed = await er.json();
         norm.episodes = (ed.data||ed||[]).map(p.episodeMap);
       } catch { norm.episodes = []; }
@@ -189,19 +202,9 @@ app.get('/api/proxy', async (req, res) => {
   if (!url) return res.status(400).send('Missing url');
   const decoded = decodeURIComponent(url);
   try {
-const r = await fetchT(decoded, {
-  headers: {
-    'Referer':          'https://anizone.to/',
-    'Origin':           'https://anizone.to',
-    'User-Agent':       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-    'Accept':           '*/*',
-    'Accept-Language':  'en-US,en;q=0.9',
-    'Accept-Encoding':  'gzip, deflate, br',
-    'Sec-Fetch-Dest':   'empty',
-    'Sec-Fetch-Mode':   'cors',
-    'Sec-Fetch-Site':   'cross-site',
-  }
-}, 20000);
+    const r = await fetchT(decoded, {
+      headers: { 'Referer':'https://anizone.to/', 'Origin':'https://anizone.to', 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+    }, 20000);
     if (!r.ok) return res.status(r.status).send(`Upstream ${r.status}`);
     const ct = r.headers.get('content-type') || '';
     res.setHeader('Access-Control-Allow-Origin', '*');
