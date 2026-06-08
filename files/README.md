@@ -119,7 +119,6 @@ to confirm NervHQ is responding.
 
 - **AniList/MAL login** — OAuth2, store token in cookie, sync watch state
 - **Forum** — WebSocket-based or simple REST with SQLite
-- **Waifu.im / waifu.pics API** — `/fanart` page, no auth needed
 - **Second provider** — Add Anizone: register routes in server.js, add
   provider selector to navbar, prefix API calls with provider slug
 - **HTTPS** — Use `caddy` or `nginx` as reverse proxy when sharing publicly
