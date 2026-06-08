@@ -3,7 +3,7 @@
    Caches shell + static assets for offline/PWA
    ============================================= */
 
-const CACHE     = 'aniwatch-v1';
+const CACHE     = 'aniwatch-v2';
 const SHELL     = [
   '/',
   '/index.html',
@@ -14,39 +14,26 @@ const SHELL     = [
 ];
 
 // Install — cache the shell
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())
-  );
-});
-
-// Activate — clean old caches
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
-});
-
-// Fetch strategy:
-// - API / proxy / auth calls → network only (never cache streams)
-// - Static assets → cache first, fallback to network
-// - Pages → network first, fallback to cache
 self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
+  const url = e.request.url;
 
-  // Never intercept API, proxy, or auth calls
-  if (url.pathname.startsWith('/api/') ||
-      url.pathname.startsWith('/auth/') ||
-      url.hostname.includes('myanimelist') ||
-      url.hostname.includes('jikan') ||
-      url.hostname.includes('vid-cdn') ||
-      url.hostname.includes('anizone')) {
+  // Ignore anything that isn't http/https (chrome-extension, data, blob etc)
+  if (!url.startsWith('http')) return;
+
+  const parsed = new URL(url);
+
+  // Never intercept API, proxy, auth, or external CDNs
+  if (parsed.pathname.startsWith('/api/') ||
+      parsed.pathname.startsWith('/auth/') ||
+      parsed.hostname.includes('myanimelist') ||
+      parsed.hostname.includes('jikan') ||
+      parsed.hostname.includes('vid-cdn') ||
+      parsed.hostname.includes('xin-cdn') ||
+      parsed.hostname.includes('anizone')) {
     return;
   }
 
-  // Static assets (css, js, fonts, images) — cache first
+  // Static assets — cache first
   if (e.request.destination === 'style' ||
       e.request.destination === 'script' ||
       e.request.destination === 'font' ||
@@ -57,19 +44,25 @@ self.addEventListener('fetch', e => {
         return fetch(e.request).then(res => {
           if (res.ok) {
             const clone = res.clone();
-            caches.open(CACHE).then(c => c.put(e.request, clone));
+            caches.open(CACHE).then(c => c.put(e.request, clone)).catch(() => {});
           }
           return res;
-        });
+        }).catch(() => cached || new Response('', { status: 503 }));
       })
     );
     return;
   }
 
-  // HTML pages — network first, fallback to cached index.html
+  // HTML — network first, fallback to shell
   e.respondWith(
-    fetch(e.request).catch(() =>
-      caches.match('/index.html')
-    )
+    fetch(e.request)
+      .then(res => {
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone)).catch(() => {});
+        }
+        return res;
+      })
+      .catch(() => caches.match('/index.html'))
   );
 });

@@ -2,7 +2,7 @@
   "include": ["src"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "outDir": "dist", // added recently to test a build step lets see
+    "outDir": "dist",
     "target": "esnext" ,
     "module": "nodenext",
     "moduleResolution": "nodenext",   
