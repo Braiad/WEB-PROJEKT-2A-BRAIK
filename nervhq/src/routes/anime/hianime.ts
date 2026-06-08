@@ -5,7 +5,7 @@ import { IAnimeCategoryArr, type FastifyParams, type FastifyQuery } from '../../
 import { redisGetCache, redisSetCache } from '../../middleware/cache.js';
 import { splitEpisodes } from '../../utils/utils.js';
 
-const baseUrl = process.env.HIANIMEURL || 'https://aniwatchtv.to';
+const baseUrl = process.env.HIANIMEURL || 'https://hianime.ro';
 const zoro = new Aniwatch(baseUrl);
 
 export default async function hianimeRoutes(fastify: FastifyInstance) {
