@@ -7,6 +7,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0d0e11" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AniWatch" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -223,6 +230,15 @@
   </div>
 
   <div id="toast" class="toast hidden"></div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(r => console.log('[SW] Registered:', r.scope))
+          .catch(e => console.warn('[SW] Failed:', e));
+      });
+    }
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
   <script src="app.js"></script>
 </body>
