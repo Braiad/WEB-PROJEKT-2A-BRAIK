@@ -1,245 +1,405 @@
+/* =============================================
+   ANIWATCH — style.css
+   Globální styly pro celou aplikaci
+   ============================================= */
+
+/* ── GLOBÁLNÍ CSS PROMĚNNÉ (barevná paleta a fonty) ── */
 :root {
+  /* Vrstvy pozadí — od nejtmavší po světlejší */
   --bg:#0d0e11; --bg2:#13151a; --bg3:#1a1d24;
+  /* Povrchy pro karty, panely apod. */
   --surface:#1e2029; --surface2:#252833;
+  /* Barvy rámečků/ohraničení */
   --border:#2a2d38; --border2:#353848;
+  /* Akcentové barvy — modrá, fialová, zlatá, červená (chyba) */
   --accent:#7eb8d4; --accent2:#c9a0dc; --accent3:#e8d5b0; --danger:#e05a5a;
+  /* Barvy textu — hlavní, tlumený, velmi tlumený */
   --text:#d8dce8; --text-muted:#6b7080; --text-dim:#3a3f52;
+  /* Fonty: monospace pro kód/UI, display pro nadpisy, body pro text */
   --font-mono:'Share Tech Mono',monospace;
   --font-display:'Orbitron',sans-serif;
   --font-body:'Inter',sans-serif;
+  /* Zaoblení rohů */
   --radius:4px; --radius-lg:8px;
+  /* Záře (glow) efekty pro hover stavy */
   --glow-blue:0 0 20px rgba(126,184,212,0.25);
   --glow-pink:0 0 20px rgba(201,160,220,0.25);
 }
+
+/* ── RESET A ZÁKLADNÍ STYLY ── */
+/* Odstraní výchozí margin/padding, nastaví box-sizing na border-box pro všechny prvky */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+/* Plynulé scrollování při použití kotevních odkazů nebo scrollIntoView */
 html{scroll-behavior:smooth}
+/* Základní styl těla stránky — tmavé pozadí, světlý text, skrytý horizontální scroll */
 body{background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:14px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+/* Třída pro skrytí elementů — !important přebije inline styly */
 .hidden{display:none!important}
+/* Obrázky jako blokové elementy, max šířka 100% pro responzivitu */
 img{display:block;max-width:100%}
+/* Tlačítka používají kurzor pointer a monospace font */
 button{cursor:pointer;font-family:var(--font-mono)}
+/* Inputy také monospace */
 input{font-family:var(--font-mono)}
 
-/* SCANLINES — z-index 50, below player (z-index 100) */
+/* ── SCANLINES EFEKT (CRT obrazovka) ── */
+/* Překryvná vrstva přes celou stránku simulující linky CRT monitoru.
+   z-index:50 je pod přehrávačem (z-index:100) ale nad ostatním obsahem.
+   pointer-events:none zajistí, že neklikuje na nic pod ním. */
 .scanlines{position:fixed;inset:0;z-index:50;background:repeating-linear-gradient(to bottom,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);pointer-events:none;animation:scanlineShift 12s linear infinite}
+/* Animace posunuje pozadí po výšce viewportu — vytváří efekt pohybujících se linek */
 @keyframes scanlineShift{0%{background-position:0 0}100%{background-position:0 100vh}}
 
-/* NAVBAR */
+/* ── NAVIGAČNÍ LIŠTA ── */
+/* Fixní lišta přes celou šířku nahoře. Průhledné pozadí s blur efektem (glassmorphism).
+   z-index:100 — nad vším ostatním kromě přehrávacího overlay. */
 .navbar{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:rgba(13,14,17,0.92);border-bottom:1px solid var(--border);backdrop-filter:blur(12px)}
+/* Dekorativní gradient čára pod nav lištou — modrá → fialová → průhledná */
 .navbar::before{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);opacity:0.5}
+/* Levá část navigace — logo + status */
 .nav-left{display:flex;align-items:center;gap:24px}
+/* Pravá část navigace — výběr zdroje, vyhledávání, MAL widget */
 .nav-right{display:flex;align-items:center}
+/* Logo aplikace — klikatelné, monospace display font */
 .logo{font-family:var(--font-display);font-weight:900;font-size:1.1rem;letter-spacing:0.08em;cursor:pointer;color:var(--text);transition:color 0.2s}
 .logo:hover{color:var(--accent)}
+/* Závorky kolem loga jsou záměrně tlumené */
 .logo-bracket{color:var(--text-muted);font-weight:400}
+/* Část "WATCH" je v akcentové barvě */
 .logo-accent{color:var(--accent)}
+/* Stavový text vedle loga — malý, rozepsaný */
 .nav-status{display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:0.65rem;color:var(--text-muted);letter-spacing:0.1em}
+/* Pulzující zelená tečka signalizující aktivní stav systému */
 .status-dot{width:6px;height:6px;border-radius:50%;background:#4caf82;box-shadow:0 0 8px #4caf82;animation:pulse 2.5s ease-in-out infinite}
+/* Animace pulzu — tečka bliká */
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+/* Vyhledávací pole v navigaci — tmavé pozadí, zaoblené rohy */
 .search-bar{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color 0.2s}
+/* Zvýrazní rámeček modrým glowem při fokusu */
 .search-bar:focus-within{border-color:var(--accent);box-shadow:var(--glow-blue)}
 .search-bar input{background:none;border:none;outline:none;color:var(--text);font-size:0.8rem;padding:8px 14px;width:240px;letter-spacing:0.05em}
 .search-bar input::placeholder{color:var(--text-muted)}
+/* Tlačítko vyhledávání — odděleno levým rámečkem, mění barvu při hoveru */
 .search-bar button{background:none;border:none;border-left:1px solid var(--border);color:var(--text-muted);padding:8px 12px;transition:color 0.2s,background 0.2s;display:flex;align-items:center}
 .search-bar button:hover{color:var(--accent);background:var(--bg3)}
 
-/* HERO */
+/* ── HERO SEKCE (velký banner na domovské stránce) ── */
+/* Minimální výška 80vh, centrovává obsah vertikálně, skryje přesahy */
 .hero{position:relative;min-height:80vh;display:flex;align-items:center;padding:100px 10% 80px;overflow:hidden}
+/* Animovaná mřížka na pozadí — jemné modré linky posouvající se diagonálně */
 .hero-bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(126,184,212,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(126,184,212,0.04) 1px,transparent 1px);background-size:48px 48px;animation:gridMove 25s linear infinite}
 @keyframes gridMove{0%{background-position:0 0}100%{background-position:48px 48px}}
+/* Radiální gradient překrývající mřížku zdola — plynulý přechod do pozadí */
 .hero::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 100%,rgba(13,14,17,0.85),transparent);pointer-events:none}
+/* Obsah hero sekce — z-index:1 aby byl nad mřížkou */
 .hero-content{position:relative;z-index:1;max-width:600px}
+/* Malý text nad názvem — načte se s animací posouvání zdola */
 .hero-eyebrow{font-family:var(--font-mono);font-size:0.7rem;color:var(--accent);letter-spacing:0.15em;margin-bottom:20px;opacity:0;animation:fadeUp 0.6s 0.1s forwards}
+/* Hlavní nadpis — velikost se přizpůsobí viewportu (clamp), tučný display font */
 .hero-title{font-family:var(--font-display);font-weight:900;font-size:clamp(2.8rem,6vw,5rem);line-height:1;letter-spacing:-0.01em;color:var(--text);opacity:0;animation:fadeUp 0.6s 0.2s forwards}
+/* Fialová barva pro "TRACK." část nadpisu */
 .hero-accent{color:var(--accent2)}
+/* Podtitul pod nadpisem */
 .hero-sub{margin-top:20px;font-size:0.85rem;color:var(--text-muted);line-height:1.8;font-family:var(--font-mono);opacity:0;animation:fadeUp 0.6s 0.35s forwards}
+/* Vyhledávací pole v hero sekci — plná šířka, animováno */
 .hero-search{margin-top:36px;display:flex;max-width:480px;opacity:0;animation:fadeUp 0.6s 0.5s forwards}
+/* Textový input bere veškeré volné místo (flex:1), bez pravého rámečku */
 .hero-search input{flex:1;background:var(--surface);border:1px solid var(--border2);border-right:none;border-radius:var(--radius) 0 0 var(--radius);color:var(--text);padding:14px 18px;font-size:0.85rem;outline:none;transition:border-color 0.2s}
 .hero-search input:focus{border-color:var(--accent)}
 .hero-search input::placeholder{color:var(--text-muted)}
+/* Tlačítko vyhledávání — výrazná modrá barva, navazuje na input zprava */
 .hero-search button{background:var(--accent);color:var(--bg);border:none;border-radius:0 var(--radius) var(--radius) 0;padding:14px 24px;font-size:0.75rem;font-weight:700;letter-spacing:0.08em;transition:background 0.2s}
 .hero-search button:hover{background:#a8d4ea}
+/* Sdílená animace pro hero prvky — plynulé vynoření se zdola */
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 
-/* SECTIONS */
+/* ── SEKCE (nedávné, nejlepší...) ── */
 .section{padding:60px 8% 20px}
+/* Záhlaví sekce — název vlevo, badge nebo tlačítko vpravo. Oddělující čára dole. */
 .section-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:12px}
 .section-title{font-family:var(--font-display);font-weight:700;font-size:0.85rem;letter-spacing:0.12em;color:var(--text)}
+/* Fialový prefix ("01 //") před názvem sekce */
 .title-prefix{color:var(--accent2);margin-right:8px;font-weight:400}
+/* Odznak zobrazující aktuální sezónu (SPRING 2026 apod.) */
 .season-badge{font-family:var(--font-mono);font-size:0.65rem;color:var(--accent3);letter-spacing:0.1em;background:rgba(232,213,176,0.08);border:1px solid rgba(232,213,176,0.2);padding:3px 10px;border-radius:2px}
+/* Tlačítko "CLEAR ALL" v sekci historie — červené při hoveru */
 .clear-btn{background:none;border:1px solid var(--border);color:var(--text-muted);padding:4px 12px;font-size:0.65rem;letter-spacing:0.1em;border-radius:var(--radius);transition:border-color 0.2s,color 0.2s}
 .clear-btn:hover{border-color:var(--danger);color:var(--danger)}
 
-/* CARDS */
+/* ── MŘÍŽKA ANIME KARET ── */
+/* Automaticky přizpůsobí počet sloupců — minimum 160px, 16px mezera */
 .anime-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
+/* Karta anime — zaoblené rohy, přechod při hoveru (zdvih + modrý glow) */
 .anime-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:transform 0.2s,border-color 0.2s,box-shadow 0.2s;position:relative}
 .anime-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:var(--glow-blue)}
+/* Při hoveru na kartu zobrazí overlay (tmavý přechod s tlačítkem) */
 .anime-card:hover .card-overlay{opacity:1}
+/* Obal posteru — poměr 2:3 (portrait), skryje přesah */
 .card-poster-wrap{position:relative;aspect-ratio:2/3;overflow:hidden}
+/* Obrázek posteru — vyplní celý obal, cover fit */
 .card-poster-wrap img{width:100%;height:100%;object-fit:cover;transition:transform 0.3s}
+/* Při hoveru lehce přiblíží poster */
 .anime-card:hover .card-poster-wrap img{transform:scale(1.04)}
+/* Tmavý gradient overlay přes poster — viditelný jen při hoveru */
 .card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,14,17,0.95) 0%,rgba(13,14,17,0.4) 50%,transparent 100%);opacity:0;transition:opacity 0.25s;display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px}
+/* Tlačítko "// VIEW" zobrazené při hoveru na poster */
 .card-play-btn{font-family:var(--font-mono);font-size:0.65rem;color:var(--accent);letter-spacing:0.1em;border:1px solid var(--accent);padding:5px 14px;border-radius:var(--radius);background:rgba(126,184,212,0.1)}
+/* Odznak se skóre v pravém horním rohu posteru */
 .card-score-badge{position:absolute;top:8px;right:8px;background:rgba(13,14,17,0.85);border:1px solid var(--border2);font-family:var(--font-mono);font-size:0.65rem;color:var(--accent3);padding:2px 7px;border-radius:2px}
+/* Spodní info pásek karty — název a meta (typ, rok) */
 .card-info{padding:10px 12px 12px}
+/* Název anime — max 2 řádky, zbytek oříznut */
 .card-title{font-size:0.78rem;font-weight:500;color:var(--text);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* Meta informace (typ, rok) pod názvem */
 .card-meta{margin-top:5px;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);letter-spacing:0.04em}
 
-/* CONTINUE WATCHING */
+/* ── SEKCE "POKRAČOVAT VE SLEDOVÁNÍ" ── */
+/* Mřížka vodorovných karet — minimum 220px šířka */
 .continue-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+/* Horizontální karta s miniaturou, názvem a číslem epizody */
 .continue-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);display:flex;gap:12px;align-items:center;padding:12px;cursor:pointer;transition:border-color 0.2s,transform 0.2s}
 .continue-card:hover{border-color:var(--accent2);transform:translateY(-2px)}
+/* Miniatura posteru vlevo — pevná velikost */
 .continue-thumb{width:52px;height:72px;object-fit:cover;border-radius:var(--radius);flex-shrink:0}
+/* Textová část — skryje přetékání */
 .continue-info{overflow:hidden}
+/* Název anime — neobaluje se, přetékání s "..." */
 .continue-title{font-size:0.78rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+/* Číslo epizody pod názvem */
 .continue-ep{font-family:var(--font-mono);font-size:0.65rem;color:var(--accent);margin-top:3px}
+/* Progress bar (lišta průběhu) — šedé pozadí, vyplnění fialové */
 .continue-progress{height:2px;background:var(--border);border-radius:1px;margin-top:6px}
 .continue-progress-fill{height:100%;background:var(--accent2);border-radius:1px;min-width:4px}
 
-/* SKELETONS */
+/* ── SKELETON KARTY (loading placeholder) ── */
+/* display:contents — skeleton-grid nezabírá vlastní prostor, karty se chovají
+   jako přímé děti anime-grid */
 .skeleton-grid{display:contents}
+/* Skeleton karta — animovaný shimmer efekt pro loading stav */
 .skeleton-card{aspect-ratio:2/3;background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:var(--radius-lg);border:1px solid var(--border)}
+/* Animace shimmer — posun gradientu zleva doprava */
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-/* SEARCH VIEW */
+/* ── POHLED VYHLEDÁVÁNÍ ── */
+/* Padding kvůli fixní navigační liště (56px) + prostor kolem */
 #searchView{padding:100px 8% 60px}
 .view-header{margin-bottom:32px;border-bottom:1px solid var(--border);padding-bottom:12px}
 .view-title{font-family:var(--font-display);font-weight:700;font-size:0.85rem;letter-spacing:0.12em}
+/* Část nadpisu se searchQueryLabel je modrá */
 .view-title span{color:var(--accent)}
+/* Prázdný stav při nenalezení výsledků — centrovaný text */
 .empty-state{text-align:center;padding:80px 0;font-family:var(--font-mono);color:var(--text-muted)}
+/* Velký "// 404" text jako ikona prázdného stavu */
 .empty-icon{font-size:3rem;font-family:var(--font-display);color:var(--border2);margin-bottom:16px}
 
-/* DETAIL VIEW */
+/* ── POHLED DETAILU ANIME ── */
+/* Padding-top 56px kvůli fixní navigaci */
 #detailView{padding-top:56px}
+/* Hero sekce detailu — relativní pozice pro absolutní dítěte (blur pozadí) */
 .detail-hero{position:relative;padding:60px 8% 48px;overflow:hidden}
+/* Rozmazaný poster jako pozadí hero sekce — filter blur + ztmavení */
 .detail-hero-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(40px) brightness(0.25);transform:scale(1.1)}
+/* Gradient překrývající rozmazaný poster — plynulý přechod na pozadí stránky */
 .detail-hero::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,var(--bg) 100%)}
+/* Obsah nad pozadím — flex řada: poster vlevo, info vpravo */
 .detail-hero-content{position:relative;z-index:1;display:flex;gap:40px;align-items:flex-start}
+/* Poster v detailu — pevná šířka, zaoblené rohy, stín */
 #detailPoster{width:180px;flex-shrink:0;border-radius:var(--radius-lg);border:1px solid var(--border2);box-shadow:0 8px 40px rgba(0,0,0,0.6)}
+/* Textová část detailu — roztáhne se (flex:1) */
 .detail-info{flex:1}
+/* Řada s odznaky (typ, rok, status) */
 .detail-meta-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+/* Odznak meta informace — monospace, malé písmo, tmavé pozadí */
 .meta-badge{font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.08em;padding:3px 10px;border-radius:2px;background:var(--surface2);border:1px solid var(--border2);color:var(--text-muted)}
+/* Zlatá barva pro rok vydání */
 .meta-badge.meta-year{color:var(--accent3);border-color:rgba(232,213,176,0.2)}
+/* Zelená barva pro status "Airing" */
 .meta-badge.meta-status{color:#4caf82;border-color:rgba(76,175,130,0.2)}
+/* Název anime — velký display font, responzivní velikost */
 #detailTitle{font-family:var(--font-display);font-size:clamp(1.4rem,3vw,2.2rem);font-weight:900;line-height:1.2;margin-bottom:14px}
+/* Synopsis — max 4 řádky, zbytek oříznut */
 #detailSynopsis{font-size:0.83rem;color:var(--text-muted);line-height:1.8;max-width:640px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+/* Statistiky (skóre, epizody, studio) — vodorovná řada s oddělovačem nahoře */
 .detail-stats{display:flex;gap:32px;margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
 .stat{display:flex;flex-direction:column;gap:4px}
+/* Malý popisek statistiky (SCORE, EPISODES...) */
 .stat-label{font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:0.12em}
+/* Hodnota statistiky — tučný display font, akcentová barva */
 .stat-val{font-family:var(--font-display);font-size:1rem;font-weight:700;color:var(--accent)}
 
-/* EPISODES */
+/* ── SEKCE EPIZOD ── */
 .episodes-section{padding:40px 8% 60px}
+/* Filtrační input pro epizody */
 .ep-controls input{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:6px 12px;font-size:0.75rem;outline:none;transition:border-color 0.2s}
 .ep-controls input:focus{border-color:var(--accent)}
+/* Mřížka tlačítek epizod — minimum 80px, kompaktní mezera */
 .episode-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px}
+/* Tlačítko epizody — tlumená barva, malé písmo, přechod při hoveru */
 .ep-btn{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-muted);padding:10px 8px;font-size:0.7rem;letter-spacing:0.06em;transition:border-color 0.15s,color 0.15s,background 0.15s;text-align:center}
 .ep-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* Aktivní (právě přehrávaná) epizoda — plné modré pozadí */
 .ep-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:700}
+/* Zhlédnutá epizoda — průhledná modrá barva */
 .ep-btn.watched{border-color:rgba(126,184,212,0.3);color:rgba(126,184,212,0.5)}
+/* Za zhlédnutou epizodou se přidá fajfka pomocí CSS ::after */
 .ep-btn.watched::after{content:'✓';margin-left:4px;font-size:0.6rem}
+/* Loading indikátor "// FETCHING EPISODE DATA" — bliká */
 .loading-indicator{padding:40px;text-align:center;font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);letter-spacing:0.15em;animation:blink 1.2s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 
-/* PLAYER — z-index 100, above scanlines */
+/* ── PŘEHRÁVAČ — z-index 100, nad scanlines vrstvou ── */
+/* Celá obrazovka pro playerView, relativní pozice, vysoký z-index */
 #playerView{padding-top:56px;min-height:100vh;position:relative;z-index:100}
+/* Dvousloupcové rozvržení: video | postranní panel epizod */
 .player-layout{display:grid;grid-template-columns:1fr 300px;height:calc(100vh - 56px)}
+/* Levý sloupec — video + info bar */
 .player-main{display:flex;flex-direction:column;background:#000}
+/* Obal videa — centruje přehrávač, černé pozadí */
 .player-wrap{flex:1;position:relative;display:flex;align-items:center;justify-content:center;background:#000}
+/* Vlastní video element — plná šířka, max výška minus navigace a info bar */
 #videoPlayer{width:100%;height:100%;max-height:calc(100vh - 56px - 64px);background:#000;position:relative;z-index:100}
+/* Překryvná vrstva přehrávače (loading, error) — tmavé pozadí, centrovaný text */
 .player-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:101}
+/* Text v overlay — monospace, modrá, bliká */
 .player-overlay-text{font-family:var(--font-mono);font-size:0.8rem;color:var(--accent);letter-spacing:0.15em;animation:blink 1.2s ease-in-out infinite}
+/* Info bar pod videem — výška 64px, flex řada s mezerami */
 .player-info-bar{height:64px;background:var(--bg2);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px}
+/* Název anime v info baru — oříznutý na max šířce */
 .player-anime-title{font-family:var(--font-display);font-size:0.75rem;font-weight:700;letter-spacing:0.06em;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px}
+/* Číslo epizody v info baru */
 .player-ep-title{font-family:var(--font-mono);font-size:0.7rem;color:var(--accent);white-space:nowrap}
 
-/* SUB / DUB TOGGLE */
+/* ── PŘEPÍNAČ SUB / DUB ── */
 .audio-toggle{display:flex;margin-left:4px}
+/* Tlačítka SUB a DUB — spojená dohromady bez mezery */
 .audio-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);padding:4px 12px;font-size:0.65rem;letter-spacing:0.08em;transition:all 0.15s}
+/* Zaoblení levého tlačítka (SUB) */
 .audio-btn:first-child{border-radius:var(--radius) 0 0 var(--radius)}
+/* Zaoblení pravého tlačítka (DUB), bez levého rámečku */
 .audio-btn:last-child{border-radius:0 var(--radius) var(--radius) 0;border-left:none}
+/* Aktivní přepínač — fialové pozadí */
 .audio-btn.active{background:var(--accent2);color:var(--bg);border-color:var(--accent2)}
 .audio-btn:hover:not(.active){border-color:var(--accent2);color:var(--accent2)}
 
-/* QUALITY */
+/* ── VÝBĚR KVALITY STREAMU ── */
 .quality-selector{display:flex;gap:6px;margin-left:auto}
+/* Tlačítka kvality — zaoblená, tlumená barva */
 .quality-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);padding:4px 10px;font-size:0.65rem;letter-spacing:0.06em;border-radius:var(--radius);transition:border-color 0.15s,color 0.15s}
 .quality-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* Aktivní kvalita — plné modré pozadí */
 .quality-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
 
-/* SIDEBAR */
+/* ── POSTRANNÍ PANEL EPIZOD V PŘEHRÁVAČI ── */
+/* Tmavší pozadí, levý rámeček, flex sloupec */
 .player-sidebar{background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+/* Záhlaví panelu — "// EPISODE LIST" + tlačítko zpět */
 .sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);letter-spacing:0.1em}
+/* Tlačítko "← BACK" — vrátí se na detail */
 .back-btn{background:none;border:1px solid var(--border);color:var(--text-muted);padding:4px 10px;font-size:0.65rem;letter-spacing:0.06em;border-radius:var(--radius);transition:border-color 0.15s,color 0.15s}
 .back-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+/* Scrollovatelný seznam epizod v panelu — úzký scrollbar */
 .sidebar-ep-list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:4px}
+/* Vlastní scrollbar — pouze pro WebKit prohlížeče */
 .sidebar-ep-list::-webkit-scrollbar{width:4px}
 .sidebar-ep-list::-webkit-scrollbar-track{background:transparent}
 .sidebar-ep-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+/* Tlačítka epizod v postranním panelu — průhledné pozadí, zarovnání vlevo */
 .sidebar-ep-btn{background:none;border:1px solid transparent;color:var(--text-muted);padding:9px 12px;font-size:0.72rem;letter-spacing:0.05em;border-radius:var(--radius);text-align:left;transition:background 0.15s,border-color 0.15s,color 0.15s}
 .sidebar-ep-btn:hover{background:var(--surface);color:var(--text);border-color:var(--border)}
+/* Aktivní epizoda v panelu — modrý rámeček a text */
 .sidebar-ep-btn.active{background:var(--surface2);color:var(--accent);border-color:var(--accent)}
+/* Zhlédnutá epizoda v panelu — průhledná modrá */
 .sidebar-ep-btn.watched{color:rgba(126,184,212,0.4)}
+/* Za text zhlédnuté epizody se přidá fajfka */
 .sidebar-ep-btn.watched span::after{content:' ✓'}
 
-/* TOAST */
+/* ── TOAST NOTIFIKACE ── */
+/* Fixní pozice vpravo dole, přejede z vpravo (transform translateX) */
 .toast{position:fixed;bottom:24px;right:24px;z-index:9998;background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent);color:var(--text);padding:12px 20px;font-family:var(--font-mono);font-size:0.75rem;border-radius:var(--radius-lg);box-shadow:0 8px 32px rgba(0,0,0,0.5);transform:translateX(120%);transition:transform 0.3s ease}
+/* Viditelný stav — sjede do zobrazitelné oblasti */
 .toast.show{transform:translateX(0)}
+/* Chybový toast — červený levý rámeček místo modrého */
 .toast.error{border-left-color:var(--danger)}
 
-/* RESPONSIVE */
+/* ── RESPONZIVNÍ PŘIZPŮSOBENÍ ── */
+/* Tablety a menší obrazovky — přehrávač přejde na vertikální rozložení */
 @media(max-width:900px){
   .player-layout{grid-template-columns:1fr;grid-template-rows:auto 280px}
   .player-main{height:auto}
+  /* Video omezí výšku na 60% šířky viewportu */
   #videoPlayer{max-height:60vw}
+  /* Postranní panel přejde pod video */
   .player-sidebar{height:280px;border-left:none;border-top:1px solid var(--border)}
 }
+/* Mobilní telefony */
 @media(max-width:700px){
   .navbar{padding:0 16px}
-  .nav-status{display:none}
-  .search-bar input{width:160px}
+  .nav-status{display:none} /* Skryje stavový text v navigaci */
+  .search-bar input{width:160px} /* Užší vyhledávací pole */
   .hero{padding:90px 6% 60px;min-height:70vh}
   .section{padding:40px 5% 10px}
+  /* Detail hero — poster a info se přeskládají vertikálně */
   .detail-hero-content{flex-direction:column}
   #detailPoster{width:140px}
   .detail-stats{gap:16px}
+  /* Menší minimální šířka karet */
   .anime-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
   .player-info-bar{gap:8px}
   .player-anime-title{max-width:160px}
 }
 
-/* ── PROVIDER SELECTOR (navbar) ── */
+/* ── VÝBĚR POSKYTOVATELE (navigace) ── */
+/* Flexová řada s tlačítky ANIZONE / HIANIME / PAHE */
 .provider-selector { display:flex; align-items:center; gap:4px; margin-right:12px; }
+/* Popisek "SRC //" před tlačítky */
 .provider-label { font-family:var(--font-mono); font-size:0.6rem; color:var(--text-muted); letter-spacing:0.1em; margin-right:4px; }
+/* Jednotlivá tlačítka poskytovatele — průhledné pozadí, rámeček */
 .provider-btn { background:none; border:1px solid var(--border); color:var(--text-muted); padding:4px 10px; font-size:0.62rem; letter-spacing:0.07em; border-radius:var(--radius); transition:all 0.15s; }
 .provider-btn:hover { border-color:var(--accent); color:var(--accent); }
+/* Aktivní poskytovatel — plné modré pozadí */
 .provider-btn.active { background:var(--accent); color:var(--bg); border-color:var(--accent); }
 
-/* ── PLAYER PROVIDER SELECTOR ── */
+/* ── VÝBĚR POSKYTOVATELE V PŘEHRÁVAČI ── */
+/* Select element místo tlačítek — pro kompaktnější zobrazení v info baru */
 .player-provider-selector { display:flex; align-items:center; gap:6px; }
 .player-provider-selector .provider-label { font-family:var(--font-mono); font-size:0.6rem; color:var(--text-muted); letter-spacing:0.08em; }
 .player-provider-selector select { background:var(--surface); border:1px solid var(--border); color:var(--text); padding:4px 8px; font-family:var(--font-mono); font-size:0.65rem; border-radius:var(--radius); outline:none; cursor:pointer; transition:border-color 0.15s; }
 .player-provider-selector select:focus { border-color:var(--accent); }
 
-/* ── MAL WIDGET (navbar) ── */
+/* ── MAL WIDGET (navigace) ── */
+/* Obal MAL widgetu — levý okraj */
 .mal-widget { margin-left:12px; }
+/* Tlačítko "Přihlásit se přes MAL" — ikona + text */
 .mal-login-btn { display:flex; align-items:center; gap:6px; font-family:var(--font-mono); font-size:0.65rem; color:var(--text-muted); letter-spacing:0.08em; border:1px solid var(--border); padding:5px 12px; border-radius:var(--radius); cursor:pointer; transition:all 0.15s; }
 .mal-login-btn:hover { border-color:var(--accent2); color:var(--accent2); }
+/* Přihlášený stav — avatar, jméno, tlačítko odhlášení */
 .mal-user { display:flex; align-items:center; gap:8px; font-family:var(--font-mono); font-size:0.65rem; color:var(--text); }
+/* Kruhový avatar uživatele */
 .mal-user img { width:24px; height:24px; border-radius:50%; border:1px solid var(--border2); }
+/* Tlačítko "✕" pro odhlášení — červené při hoveru */
 .mal-logout { background:none; border:none; color:var(--text-muted); font-size:0.7rem; padding:2px 5px; transition:color 0.15s; }
 .mal-logout:hover { color:var(--danger); }
 
-/* ── MAL TRACKER (detail panel) ── */
+/* ── MAL TRACKER PANEL (detail stránka) ── */
+/* Panel pro sledování stavu anime na MAL — status, skóre, průběh */
 .mal-tracker { margin-top:20px; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); }
+/* Nadpis panelu "// MAL TRACKER" — fialová, monospace */
 .mal-tracker-title { font-family:var(--font-mono); font-size:0.65rem; color:var(--accent2); letter-spacing:0.12em; margin-bottom:12px; }
+/* Řada s selecty a tlačítkem — wrappuje na menších obrazovkách */
 .mal-tracker-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+/* Select pro výběr stavu (Watching, Completed...) */
 .mal-tracker-row select { background:var(--bg); border:1px solid var(--border2); color:var(--text); padding:6px 10px; font-family:var(--font-mono); font-size:0.7rem; border-radius:var(--radius); outline:none; cursor:pointer; transition:border-color 0.15s; }
 .mal-tracker-row select:focus { border-color:var(--accent2); }
+/* Obal pro select skóre + popisek */
 .mal-score-wrap { display:flex; align-items:center; gap:6px; }
 .mal-score-label { font-family:var(--font-mono); font-size:0.6rem; color:var(--text-muted); letter-spacing:0.1em; }
+/* Tlačítko "SAVE //" — fialové pozadí */
 .mal-save-btn { background:var(--accent2); color:var(--bg); border:none; padding:6px 16px; font-size:0.65rem; letter-spacing:0.08em; border-radius:var(--radius); transition:background 0.15s; }
 .mal-save-btn:hover { background:#d9b8ed; }
+/* Text s průběhem (napr. "// PROGRESS: 5/12 EPS") */
 .mal-progress-text { font-family:var(--font-mono); font-size:0.65rem; color:var(--text-muted); margin-top:10px; }
+/* Výzva k přihlášení do MAL (zobrazí se nepřihlášeným uživatelům) */
 .mal-login-prompt { margin-top:16px; }
+/* Tlačítko výzvy k přihlášení — rámeček, fialové při hoveru */
 .mal-login-prompt button { background:none; border:1px solid var(--border); color:var(--text-muted); padding:8px 16px; font-size:0.7rem; letter-spacing:0.08em; border-radius:var(--radius); transition:all 0.15s; }
 .mal-login-prompt button:hover { border-color:var(--accent2); color:var(--accent2); }

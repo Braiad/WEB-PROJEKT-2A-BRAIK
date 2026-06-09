@@ -1,12 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- =========================================================
+       METADATA + NASTAVENÍ STRÁNKY
+       Tato sekce definuje základní informace pro prohlížeč,
+       SEO, mobilní zařízení a PWA funkce.
+  ========================================================= -->
+
   <meta charset="UTF-8" />
+  <!-- UTF-8 kódování pro správné zobrazení všech znaků -->
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ANIWATCH // SYSTEM ONLINE</title>
+  <!-- Responzivita pro mobilní zařízení -->
+
+  <title>ANIWATCH</title>
+  <!-- Název stránky v záložce -->
+
+  <!-- =========================================================
+       GOOGLE FONTS
+       Načítání futuristických fontů pro UI styl aplikace
+  ========================================================= -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- =========================================================
+       PWA (PROGRESSIVE WEB APP) NASTAVENÍ
+       Umožňuje instalaci aplikace a offline funkce
+  ========================================================= -->
+
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#0d0e11" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -14,232 +38,295 @@
   <meta name="apple-mobile-web-app-title" content="AniWatch" />
   <link rel="apple-touch-icon" href="/icons/icon-192.png" />
   <meta name="mobile-web-app-capable" content="yes" />
+
+  <!-- =========================================================
+       HLAVNÍ STYL STRÁNKY
+  ========================================================= -->
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+
+  <!-- =========================================================
+       DEKORATIVNÍ VRSTVA (SCANLINES)
+       CSS efekt pro “retro / cyberpunk” vzhled
+  ========================================================= -->
   <div class="scanlines" aria-hidden="true"></div>
 
+  <!-- =========================================================
+       NAVBAR (HLAVNÍ NAVIGACE)
+       Obsahuje:
+       - logo
+       - status systému
+       - provider switch
+       - search bar
+       - MAL login
+  ========================================================= -->
   <nav class="navbar">
+
     <div class="nav-left">
+
+      <!-- LOGO + HOME NAVIGACE -->
       <div class="logo" onclick="showHome()">
         <span class="logo-bracket">[</span>ANI<span class="logo-accent">WATCH</span><span class="logo-bracket">]</span>
       </div>
+
+      <!-- STATUS INDIKÁTOR -->
       <div class="nav-status">
         <span class="status-dot"></span>
         <span class="status-text" id="statusText">SYSTEM ONLINE</span>
       </div>
+
     </div>
+
     <div class="nav-right">
-      <!-- PROVIDER SELECTOR -->
+
+      <!-- =====================================================
+           PROVIDER SELECTOR
+           Přepíná zdroj anime (API backend)
+      ===================================================== -->
       <div class="provider-selector">
         <span class="provider-label">SRC //</span>
-        <button class="provider-btn active" data-provider="anizone"   onclick="switchProvider('anizone',this)">ANIZONE</button>
-        <button class="provider-btn"        data-provider="hianime"   onclick="switchProvider('hianime',this)">HIANIME</button>
-        <button class="provider-btn"        data-provider="animepahe" onclick="switchProvider('animepahe',this)">PAHE</button>
+
+        <button class="provider-btn active" data-provider="anizone"
+          onclick="switchProvider('anizone',this)">ANIZONE</button>
+
+        <button class="provider-btn" data-provider="hianime"
+          onclick="switchProvider('hianime',this)">HIANIME</button>
+
+        <button class="provider-btn" data-provider="animepahe"
+          onclick="switchProvider('animepahe',this)">PAHE</button>
       </div>
-      <!-- SEARCH -->
+
+      <!-- =====================================================
+           SEARCH BAR (HLAVNÍ VYHLEDÁVÁNÍ)
+      ===================================================== -->
       <div class="search-bar">
         <input type="text" id="searchInput" placeholder="SEARCH ANIME..." autocomplete="off" />
         <button onclick="triggerSearch()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <!-- lupa ikona -->
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
         </button>
       </div>
-      <!-- MAL LOGIN -->
+
+      <!-- =====================================================
+           MAL LOGIN WIDGET (MyAnimeList integrace)
+      ===================================================== -->
       <div class="mal-widget">
-        <div id="malLoggedOut" class="mal-login-btn" onclick="malLogin()" title="Login with MyAnimeList">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+
+        <!-- pokud uživatel NENÍ přihlášen -->
+        <div id="malLoggedOut" class="mal-login-btn"
+             onclick="malLogin()" title="Login with MyAnimeList">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
           MAL
         </div>
+
+        <!-- pokud uživatel JE přihlášen -->
         <div id="malLoggedIn" class="mal-user hidden">
           <img id="malAvatar" src="" alt="" />
           <span id="malUsername"></span>
           <button class="mal-logout" onclick="malLogout()" title="Logout">✕</button>
         </div>
+
       </div>
     </div>
   </nav>
 
-  <!-- HOME VIEW -->
+  <!-- =========================================================
+       HOME VIEW (HLAVNÍ OBRAZOVKA)
+       Defaultní stránka aplikace
+  ========================================================= -->
   <div id="homeView">
+
+    <!-- HERO SEKCE -->
     <section class="hero">
       <div class="hero-bg-grid" aria-hidden="true"></div>
+
       <div class="hero-content">
+
         <div class="hero-eyebrow">// NERV ENTERTAINMENT SYSTEM v2.0</div>
-        <h1 class="hero-title">WATCH.<br/><span class="hero-accent">TRACK.</span><br/>REPEAT.</h1>
-        <p class="hero-sub">Unauthorized access to anime is highly encouraged.<br/>All streams are routed through local proxy.</p>
+
+        <h1 class="hero-title">
+          WATCH.<br/><span class="hero-accent">TRACK.</span><br/>REPEAT.
+        </h1>
+
+        <p class="hero-sub">
+          Unauthorized access to anime is highly encouraged.<br/>
+          All streams are routed through local proxy.
+        </p>
+
+        <!-- HERO SEARCH (rychlé vyhledávání) -->
         <div class="hero-search">
-          <input type="text" id="heroSearchInput" placeholder="Search for an anime title..." autocomplete="off" />
+          <input type="text" id="heroSearchInput" placeholder="Search for an anime title..." />
           <button onclick="triggerHeroSearch()">SEARCH //</button>
         </div>
+
       </div>
     </section>
 
+    <!-- CONTINUE WATCHING (historie sledování) -->
     <section class="section" id="continueSection" style="display:none">
       <div class="section-header">
-        <h2 class="section-title"><span class="title-prefix">01 //</span> CONTINUE WATCHING</h2>
+        <h2 class="section-title">// CONTINUE WATCHING</h2>
         <button class="clear-btn" onclick="clearHistory()">CLEAR ALL</button>
       </div>
       <div class="continue-grid" id="continueGrid"></div>
     </section>
 
+    <!-- RECENTLY UPDATED (aktuální anime) -->
     <section class="section">
       <div class="section-header">
-        <h2 class="section-title"><span class="title-prefix">02 //</span> RECENTLY UPDATED</h2>
+        <h2 class="section-title">// RECENTLY UPDATED</h2>
         <span class="season-badge" id="seasonBadge">LOADING...</span>
       </div>
       <div class="anime-grid" id="airingGrid">
+        <!-- skeleton loading UI -->
         <div class="skeleton-grid">
-          <div class="skeleton-card"></div><div class="skeleton-card"></div>
-          <div class="skeleton-card"></div><div class="skeleton-card"></div>
-          <div class="skeleton-card"></div><div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
         </div>
       </div>
     </section>
 
+    <!-- TOP RATED ANIME -->
     <section class="section">
       <div class="section-header">
-        <h2 class="section-title"><span class="title-prefix">03 //</span> TOP RATED</h2>
+        <h2 class="section-title">// TOP RATED</h2>
       </div>
       <div class="anime-grid" id="topGrid">
         <div class="skeleton-grid">
-          <div class="skeleton-card"></div><div class="skeleton-card"></div>
-          <div class="skeleton-card"></div><div class="skeleton-card"></div>
-          <div class="skeleton-card"></div><div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
         </div>
       </div>
     </section>
+
   </div>
 
-  <!-- SEARCH VIEW -->
+  <!-- =========================================================
+       SEARCH VIEW (výsledky hledání)
+  ========================================================= -->
   <div id="searchView" class="hidden">
     <div class="view-header">
       <h2 class="view-title">SEARCH RESULTS <span id="searchQueryLabel"></span></h2>
     </div>
     <div class="anime-grid" id="searchGrid"></div>
+
+    <!-- pokud nejsou výsledky -->
     <div id="searchEmpty" class="empty-state hidden">
       <div class="empty-icon">// 404</div>
       <p>No results found. Try a different query or switch provider.</p>
     </div>
   </div>
 
-  <!-- DETAIL VIEW -->
+  <!-- =========================================================
+       DETAIL VIEW (detail anime)
+  ========================================================= -->
   <div id="detailView" class="hidden">
+
     <div class="detail-hero">
       <div class="detail-hero-bg" id="detailHeroBg"></div>
+
       <div class="detail-hero-content">
-        <img id="detailPoster" src="" alt="" />
+
+        <img id="detailPoster" src="" />
+
         <div class="detail-info">
+
           <div class="detail-meta-row">
-            <span class="meta-badge" id="detailType"></span>
-            <span class="meta-badge meta-year" id="detailYear"></span>
-            <span class="meta-badge meta-status" id="detailStatus"></span>
+            <span id="detailType"></span>
+            <span id="detailYear"></span>
+            <span id="detailStatus"></span>
           </div>
+
           <h1 id="detailTitle"></h1>
           <p id="detailSynopsis"></p>
+
+          <!-- statistiky anime -->
           <div class="detail-stats">
-            <div class="stat"><span class="stat-label">SCORE</span><span class="stat-val" id="detailScore"></span></div>
-            <div class="stat"><span class="stat-label">EPISODES</span><span class="stat-val" id="detailEps"></span></div>
-            <div class="stat"><span class="stat-label">STUDIO</span><span class="stat-val" id="detailStudio"></span></div>
+            <div>SCORE <span id="detailScore"></span></div>
+            <div>EPISODES <span id="detailEps"></span></div>
+            <div>STUDIO <span id="detailStudio"></span></div>
           </div>
-          <!-- MAL TRACKER PANEL -->
-          <div id="malTracker" class="mal-tracker hidden">
-            <div class="mal-tracker-title">// MAL TRACKER</div>
-            <div class="mal-tracker-row">
-              <select id="malStatus">
-                <option value="watching">Watching</option>
-                <option value="completed">Completed</option>
-                <option value="on_hold">On Hold</option>
-                <option value="dropped">Dropped</option>
-                <option value="plan_to_watch">Plan to Watch</option>
-              </select>
-              <div class="mal-score-wrap">
-                <span class="mal-score-label">SCORE</span>
-                <select id="malScore">
-                  <option value="0">—</option>
-                  <option value="10">10 ★</option>
-                  <option value="9">9</option>
-                  <option value="8">8</option>
-                  <option value="7">7</option>
-                  <option value="6">6</option>
-                  <option value="5">5</option>
-                  <option value="4">4</option>
-                  <option value="3">3</option>
-                  <option value="2">2</option>
-                  <option value="1">1 ✕</option>
-                </select>
-              </div>
-              <button class="mal-save-btn" onclick="saveMalStatus()">SAVE //</button>
-            </div>
-            <div class="mal-progress-text" id="malProgress"></div>
-          </div>
-          <div id="malLoginPrompt" class="mal-login-prompt hidden">
-            <button onclick="malLogin()">// LOGIN TO MAL TO TRACK</button>
-          </div>
+
+          <!-- MAL tracker -->
+          <div id="malTracker" class="mal-tracker hidden"></div>
+          <div id="malLoginPrompt" class="mal-login-prompt hidden"></div>
+
         </div>
       </div>
     </div>
+
+    <!-- EPISODE LIST -->
     <div class="episodes-section">
       <div class="section-header">
-        <h2 class="section-title"><span class="title-prefix">EP //</span> EPISODES</h2>
-        <div class="ep-controls">
-          <input type="text" id="epSearch" placeholder="FILTER..." oninput="filterEpisodes()" />
-        </div>
+        <h2>// EPISODES</h2>
+        <input id="epSearch" placeholder="FILTER..." oninput="filterEpisodes()" />
       </div>
-      <div id="episodeGrid" class="episode-grid"></div>
-      <div id="epLoading" class="loading-indicator"><span>// FETCHING EPISODE DATA</span></div>
+
+      <div id="episodeGrid"></div>
+      <div id="epLoading">// FETCHING EPISODE DATA</div>
     </div>
   </div>
 
-  <!-- PLAYER VIEW -->
+  <!-- =========================================================
+       PLAYER VIEW (video přehrávač)
+  ========================================================= -->
   <div id="playerView" class="hidden">
-    <div class="player-layout">
-      <div class="player-main">
-        <div class="player-wrap">
-          <video id="videoPlayer" controls playsinline></video>
-          <div id="playerOverlay" class="player-overlay hidden">
-            <div class="player-overlay-text" id="playerOverlayText">LOADING STREAM...</div>
-          </div>
-        </div>
-        <div class="player-info-bar">
-          <div class="player-anime-title" id="playerAnimeTitle"></div>
-          <div class="player-ep-title" id="playerEpTitle"></div>
-          <div class="audio-toggle">
-            <button class="audio-btn active" id="btnSub" onclick="switchAudio('sub')">SUB</button>
-            <button class="audio-btn" id="btnDub" onclick="switchAudio('dub')">DUB</button>
-          </div>
-          <!-- PROVIDER SWITCHER IN PLAYER -->
-          <div class="player-provider-selector">
-            <span class="provider-label">SRC</span>
-            <select id="playerProviderSelect" onchange="switchPlayerProvider(this.value)">
-              <option value="anizone">Anizone</option>
-              <option value="hianime">HiAnime</option>
-              <option value="animepahe">Animepahe</option>
-            </select>
-          </div>
-          <div class="quality-selector" id="qualitySelector"></div>
-        </div>
-      </div>
-      <div class="player-sidebar">
-        <div class="sidebar-header">
-          <span>// EPISODE LIST</span>
-          <button class="back-btn" onclick="backToDetail()">← BACK</button>
-        </div>
-        <div id="sidebarEpisodes" class="sidebar-ep-list"></div>
-      </div>
+
+    <video id="videoPlayer" controls playsinline></video>
+
+    <div id="playerOverlay">LOADING STREAM...</div>
+
+    <!-- ovládání přehrávače -->
+    <div>
+      <button onclick="switchAudio('sub')">SUB</button>
+      <button onclick="switchAudio('dub')">DUB</button>
+
+      <select id="playerProviderSelect"
+        onchange="switchPlayerProvider(this.value)">
+        <option value="anizone">Anizone</option>
+        <option value="hianime">HiAnime</option>
+        <option value="animepahe">Animepahe</option>
+      </select>
     </div>
+
+    <div id="sidebarEpisodes"></div>
   </div>
 
+  <!-- TOAST NOTIFIKACE -->
   <div id="toast" class="toast hidden"></div>
+
+  <!-- =========================================================
+       SERVICE WORKER (PWA offline režim)
+  ========================================================= -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(r => console.log('[SW] Registered:', r.scope))
-          .catch(e => console.warn('[SW] Failed:', e));
+        navigator.serviceWorker.register('/sw.js');
       });
     }
   </script>
+
+  <!-- HLS STREAMING KNIHOVNA -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
+
+  <!-- HLAVNÍ LOGIKA APLIKACE -->
   <script src="app.js"></script>
+
 </body>
 </html>
