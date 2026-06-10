@@ -93,7 +93,7 @@ const PROVIDERS = {
 
 function getProvider(name) { return PROVIDERS[name] || PROVIDERS.anizone; }
 
-// ─── API ROUTES (must come BEFORE static middleware) ─────────────────────────
+// ─── API ROUTES ─────────────────────────
 
 app.get('/api/health', async (req, res) => {
   let nervStatus = 'unknown';
@@ -353,7 +353,7 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => console.log(`
 ╔══════════════════════════════════════════╗
 ║         ANIWATCH BRIDGE ONLINE           ║
-║   ${String(PUBLIC_URL).padEnd(40)}║
-║   NervHQ: ${String(NERV_API).padEnd(31)}║
+║   ${String(PUBLIC_URL).padEnd(40)}       ║
+║   NervHQ: ${String(NERV_API).padEnd(31)} ║
 ╚══════════════════════════════════════════╝
 `));
